@@ -1,0 +1,45 @@
+name: Upload Model to Hugging Face
+
+on:
+  push:
+    paths:
+      - 'florance-webagent/**'
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install Hugging Face Hub
+      run: |
+        pip install huggingface_hub
+
+    - name: Upload model to Hugging Face
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}  # Hugging Face token saved in GitHub Secrets
+      run: | 
+        cd florance-webagent
+        python <<HEREDOC
+        import os
+        from huggingface_hub import HfApi
+
+        # Path to your model files
+        HF_TOKEN = os.getenv('HF_TOKEN')
+
+        repo_id = 'anurag1995/florance-webagent'
+
+        # Authenticate to Hugging Face
+        api = HfApi(token=HF_TOKEN)
+        local_dir = os.getcwd()
+
+        api.upload_folder(
+        repo_id=repo_id,
+        folder_path=local_dir)
+        HEREDOC
